@@ -24,26 +24,34 @@ In this list, the two entries that sum to 2020 are 1721 and 299. Multiplying the
 
 Of course, your expense report is much larger. Find the two entries that sum to 2020; what do you get if you multiply them together?
 
+--- Part Two ---
+The Elves in accounting are thankful for your help; one of them even offers you a starfish coin they had left over from a past vacation. They offer you a second one if you can find three numbers in your expense report that meet the same criteria.
+
+Using the above example again, the three entries that sum to 2020 are 979, 366, and 675. Multiplying them together produces the answer, 241861950.
+
+In your expense report, what is the product of the three entries that sum to 2020?
 -}
-{-#LANGUAGE ScopedTypeVariables#-}
 import System.IO
+import Data.Maybe
 
-reportFor2 :: Int -> [Int] -> IO Int
-reportFor2 target currentReport = do
-  row :: Int <- readLn
-  if (target - row) `elem` currentReport
-    then return $ row * (target - row)
-    else reportFor2 target (currentReport ++ [row])
+type Report = [Int]
 
-reportFor3 :: Int -> [Int] -> IO Int
-reportFor3 target currentReport = do
-  row :: Int <- readLn
-  case take 1 [i * j * row | i <- currentReport, j <- currentReport, i + j + row == target] of
-    [result] -> return $ result
-    _ -> reportFor3 target (currentReport ++ [row])
+reportFor2 :: Int -> Report -> Maybe Int
+reportFor2 target report =
+  listToMaybe [i * j | i <- report, j <- report, i + j == target]
+
+reportFor3 :: Int -> Report -> Maybe Int
+reportFor3 target report =
+  listToMaybe [i * j * k | i <- report, j <- report, k <- report, i + j + k == target]
 
 main :: IO ()
 main = do
-  result <- reportFor3 2020 []
-  _ <- getContents
-  putStrLn $ show result
+  report <- getReport
+  case reportFor2 2020 report of
+    Just x -> putStrLn $ "Part 1: " ++ show x
+
+  case reportFor3 2020 report of
+    Just x -> putStrLn $ "Part 2: " ++ show x
+
+getReport :: IO Report
+getReport = map read . lines <$> getContents
