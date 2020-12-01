@@ -54,4 +54,4 @@ main = do
     Just x -> putStrLn $ "Part 2: " ++ show x
 
 getReport :: IO Report
-getReport = map read . lines <$> getContents
+getReport = map read . takeWhile (/= "") . lines <$> getContents
