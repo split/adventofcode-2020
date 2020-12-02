@@ -47,11 +47,9 @@ reportFor3 target report =
 main :: IO ()
 main = do
   report <- getReport
-  case reportFor2 2020 report of
-    Just x -> putStrLn $ "Part 1: " ++ show x
-
-  case reportFor3 2020 report of
-    Just x -> putStrLn $ "Part 2: " ++ show x
+  putStrLn $ "Part 1: " ++ showR (reportFor2 2020 report)
+  putStrLn $ "Part 2: " ++ showR (reportFor3 2020 report)
+  where showR = maybe "No result" show
 
 getReport :: IO Report
 getReport = map read . takeWhile (/= "") . lines <$> getContents
