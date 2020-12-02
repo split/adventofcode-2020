@@ -44,10 +44,10 @@ main = interact (unlines . sequence [part1, part2] . runParser)
     runParser content = either (const []) id (parse parseLines "" content)
 
 part1 :: [Rule] -> String
-part1 rules = "Part 1: " ++ (show . length $ filter checkOldRule rules)
+part1 = (++) "Part 1: " <$> show . length . filter checkOldRule
 
 part2 :: [Rule] -> String
-part2 rules = "Part 2: " ++ (show . length $ filter checkRule rules)
+part2 = (++) "Part 2: " <$> show . length . filter checkRule
 
 checkRule :: Rule -> Bool
 checkRule (aPos, bPos, c, pw) = (a == c && b /= c) || (a /= c && b == c)
@@ -56,7 +56,7 @@ checkRule (aPos, bPos, c, pw) = (a == c && b /= c) || (a /= c && b == c)
     b = pw !! (bPos - 1)
 
 checkOldRule :: Rule -> Bool
-checkOldRule (minC, maxC, c, pw) 
+checkOldRule (minC, maxC, c, pw)
   | count <= maxC = minC <= count
   | otherwise = False
   where
@@ -72,6 +72,6 @@ parseRule = do
   string ": "
   pw <- many (noneOf "\n")
   return (read minC, read maxC, c, pw)
- 
+
 parseLines :: Parser [Rule]
 parseLines = sepBy parseRule (char '\n')
