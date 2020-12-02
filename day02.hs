@@ -50,10 +50,10 @@ part2 :: [Rule] -> String
 part2 rules = "Part 2: " ++ (show . length $ filter checkRule rules)
 
 checkRule :: Rule -> Bool
-checkRule (minC, maxC, c, pw) = (a == c && b /= c) || (a /= c && b == c)
+checkRule (aPos, bPos, c, pw) = (a == c && b /= c) || (a /= c && b == c)
   where
-    a = pw !! (minC - 1)
-    b = pw !! (maxC - 1)
+    a = pw !! (aPos - 1)
+    b = pw !! (bPos - 1)
 
 checkOldRule :: Rule -> Bool
 checkOldRule (minC, maxC, c, pw) 
