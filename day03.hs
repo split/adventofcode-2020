@@ -79,7 +79,7 @@ slope (sx, sy) (dx, dy) rows =
     height = length rows
     width = length $ head rows
     pickA (x, y) = (rows !! y) !! (x `mod` width)
-    route = [(sx + dx * i, sy + i * dy) | i <- [0 .. ((height - dy) `div` dy)]]
+    route = [(sx + dx * i, sy + i * dy) | i <- [sy .. ((height - dy) `div` dy)]]
 
 solve :: Coord -> Coord -> [[Area]] -> Int
 solve pos angle rows = length $ filter (== Tree) (slope pos angle rows)
