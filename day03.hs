@@ -66,6 +66,7 @@ In the above example, these slopes would find 2, 7, 3, 4, and 2 tree(s) respecti
 What do you get if you multiply together the number of trees encountered on each of the listed slopes?
 
 -}
+import System.IO
 import Text.ParserCombinators.Parsec
 
 type Coord = (Int, Int)
@@ -87,8 +88,14 @@ solve pos angle rows = length $ filter (== Tree) (slope pos angle rows)
 slopes :: [Coord]
 slopes = [(1, 1), (3, 1), (5, 1), (7, 1), (1, 2)]
 
+part1 = (++) "Part 1: " <$> show . solve (0, 0) (3, 1)
+
+part2 = (++) "Part 2: " <$> show . product . mapM (solve (0, 0)) slopes
+
 main :: IO ()
-main = interact (show . product . mapM (solve (0, 0)) slopes . parseSlope)
+main = do
+  hSetEcho stdin False
+  interact (unlines . sequence [part1, part2] . parseSlope)
 
 parseArea :: Parser Area
 parseArea = Empty <$ char '.' <|> Tree <$ char '#'
