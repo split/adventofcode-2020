@@ -173,24 +173,18 @@ validators =
     -- ecl (Eye Color) - exactly one of: amb blu brn gry grn hzl oth.
     ("ecl", has ["amb", "blu", "brn", "gry", "grn", "hzl", "oth"]),
     -- pid (Passport ID) - a nine-digit number, including leading zeroes.
-    ("pid", (=~ "[0-9]{9}")),
+    ("pid", (=~ "[0-9]{9}"))
     -- cid (Country ID) - ignored, missing or not.
-    ("cid", const True)
   ]
 
 validateFields :: [Field] -> Bool
 validateFields fields = all validate validators
   where
     validate :: (String, Validator) -> Bool
-    validate (key, validator) = maybe (key == "cid") validator (lookup key fields)
+    validate (key, validator) = maybe False validator (lookup key fields)
 
 validateSimplePassport :: [Field] -> Bool
-validateSimplePassport fields = case length diff of
-  0 -> True
-  1 -> head diff == "cid"
-  _ -> False
-  where
-    diff = map fst validators \\ map fst fields
+validateSimplePassport fields = null (map fst validators \\ map fst fields)
 
 part1 :: [[Field]] -> String
 part1 = (++) "Part 1: " <$> show . length . filter validateSimplePassport
