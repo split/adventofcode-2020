@@ -6,10 +6,10 @@ reducePartitions pickUpper initialRegion partitions =
   fst $ foldl cropRegion initialRegion partitions
   where
     half x = fromIntegral x / 2
-    cropRegion range partition =
+    cropRegion region partition =
       if partition == pickUpper
-        then first (ceiling . half . (+ snd range)) range
-        else second (floor . half . (+ fst range)) range
+        then first (ceiling . half . (+ snd region)) region
+        else second (floor . half . (+ fst region)) region
 
 calcSid :: String -> Int
 calcSid s = row * 8 + col
