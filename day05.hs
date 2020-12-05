@@ -1,12 +1,13 @@
+import Data.Bifunctor
 import Data.List
 
-reducePlace :: Char -> (Int, Int) -> [Char] -> (Int, Int)
-reducePlace pickUpper =
+reduceSeat :: Char -> (Int, Int) -> [Char] -> (Int, Int)
+reduceSeat pickUpper =
   foldl
     ( \range rule ->
         if rule == pickUpper
-          then (half ceiling (snd range + fst range), snd range)
-          else (fst range, half floor (snd range + fst range))
+          then first (half ceiling . (+ snd range)) range
+          else second (half floor . (+ fst range)) range
     )
   where
     half f x = f (fromIntegral x / 2)
@@ -14,8 +15,8 @@ reducePlace pickUpper =
 calcRid :: String -> Int
 calcRid s = row * 8 + col
   where
-    row = fst $ reducePlace 'B' (0, 127) (take 7 s)
-    col = snd (reducePlace 'R' (0, 7) (drop 7 s))
+    row = fst $ reduceSeat 'B' (0, 127) (take 7 s)
+    col = snd (reduceSeat 'R' (0, 7) (drop 7 s))
 
 part1 :: [String] -> String
 part1 = (++) "Part 1: " <$> show . maximum . map calcRid
