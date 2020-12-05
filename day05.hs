@@ -23,7 +23,7 @@ part1 = (++) "Part 1: " <$> show . maximum . map calcSid
 part2 :: [String] -> String
 part2 lines =
   "Part 2: "
-    ++ maybe "no seat" show ((+ 1) . fst <$> find (\(a, b) -> abs (a - b) == 2) seatPairs)
+    ++ maybe "no seat" show ((+ 1) . fst <$> find (\(a, b) -> b - a == 2) seatPairs)
   where
     sids = sort $ map calcSid lines
     seatPairs = zip sids (drop 1 sids)
