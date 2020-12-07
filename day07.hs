@@ -36,8 +36,7 @@ getRules :: BagMap BagRules -> Bag -> BagRules
 getRules bags bag = fromMaybe [] (lookup bag bags)
 
 main :: IO ()
-main = do
-  interact (unlines . sequence [part1, part2] . parseBags . lines . cleanup)
+main = interact (unlines . sequence [part1, part2] . parseBags . lines . cleanup)
 
 parseBags :: [String] -> BagMap BagRules
 parseBags = map (second parseRules . cutOn " contain ")
