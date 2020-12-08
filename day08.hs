@@ -64,7 +64,7 @@ corruptionRepairs past insts = newComb : corruptionRepairs (past ++ [inst]) next
   where
     inst = head insts
     next = if length insts > 1 then tail insts else []
-    newComb = past ++ [replaceInst (head insts)] ++ next
+    newComb = past ++ [replaceInst inst] ++ next
 
 replaceInst :: [Char] -> [Char]
 replaceInst inst
