@@ -58,17 +58,18 @@ evalProgramVariants input = acc <$> msum (evalProgram' <$> corruptionRepairs [] 
 
 corruptionRepairs :: [String] -> [String] -> [[String]]
 corruptionRepairs _ [] = []
-corruptionRepairs past insts = newComb : corruptionRepairs (past ++ [inst]) next
+corruptionRepairs past insts = maybe nextCombinations (: nextCombinations) newCombination
   where
     inst = head insts
     next = if length insts > 1 then tail insts else []
-    newComb = past ++ [replaceInst inst] ++ next
+    newCombination = (\i -> past ++ [i] ++ next) <$> replaceInst inst
+    nextCombinations = corruptionRepairs (past ++ [inst]) next
 
-replaceInst :: [Char] -> [Char]
+replaceInst :: [Char] -> Maybe [Char]
 replaceInst inst
-  | "nop" `isPrefixOf` inst = replace "nop" "jmp" inst
-  | "jmp" `isPrefixOf` inst = replace "jmp" "nop" inst
-  | otherwise = inst
+  | "nop" `isPrefixOf` inst = Just $ replace "nop" "jmp" inst
+  | "jmp" `isPrefixOf` inst = Just $ replace "jmp" "nop" inst
+  | otherwise = Nothing
 
 main :: IO ()
 main = interact (unlines . sequence [part1, part2] . lines)
