@@ -29,14 +29,12 @@ evalNextInst :: [String] -> Mem -> Maybe Mem
 evalNextInst prog state = case inst of
   Just ('n' : 'o' : 'p' : ' ' : _) -> Just state {history = (cur + 1) : hist}
   Just ('a' : 'c' : 'c' : ' ' : v) -> Just state {history = (cur + 1) : hist, acc = acc state + num v}
-  Just ('j' : 'm' : 'p' : ' ' : v) ->
-    -- detect infinite loops
-    if cur + num v `elem` hist
-      then Nothing
-      else Just state {history = (cur + num v) : hist}
+  Just ('j' : 'm' : 'p' : ' ' : v) -> (\target -> state {history = target : hist}) <$> guarded notInfititeLoop (cur + num v)
   Nothing -> if length prog == cur then Just state {excited = True} else Nothing
   where
     hist = history state
+    -- detect infinite loops
+    notInfititeLoop = flip notElem hist
     cur = head hist
     inst = prog !!? cur
 
