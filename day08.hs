@@ -4,66 +4,67 @@ import Data.String.Utils (replace)
 import Relude (guarded)
 import Relude.List (isPrefixOf, (!!?))
 
+type Program = [String]
+
 data Mem = Mem
   { history :: [Int],
     acc :: Int,
-    excited :: Bool
+    exited :: Bool
   }
   deriving (Show)
 
 emptyMem :: Mem
-emptyMem = Mem {history = [0], acc = 0, excited = False}
+emptyMem = Mem {history = [0], acc = 0, exited = False}
 
-program :: [String] -> State Mem Mem
-program prog = do
+runProgram :: Program -> State Mem Mem
+runProgram program = do
   state <- get
-  maybe (return state) handleResult (evalNextInst prog state)
+  maybe (return state) handleResult (evalNextInst program state)
   where
     handleResult newState = do
       put newState
-      if excited newState
+      if exited newState
         then return newState
-        else program prog
+        else runProgram program
 
-evalNextInst :: [String] -> Mem -> Maybe Mem
-evalNextInst prog state = case inst of
+evalNextInst :: Program -> Mem -> Maybe Mem
+evalNextInst program state = case inst of
   Just ('n' : 'o' : 'p' : ' ' : _) -> Just state {history = (cur + 1) : hist}
   Just ('a' : 'c' : 'c' : ' ' : v) -> Just state {history = (cur + 1) : hist, acc = acc state + num v}
-  Just ('j' : 'm' : 'p' : ' ' : v) -> (\target -> state {history = target : hist}) <$> guarded notInfititeLoop (cur + num v)
-  Nothing -> if length prog == cur then Just state {excited = True} else Nothing
+  Just ('j' : 'm' : 'p' : ' ' : v) -> (\target -> state {history = target : hist}) <$> guarded notInfiniteLoop (cur + num v)
+  Nothing -> if length program == cur then Just state {exited = True} else Nothing
   where
     hist = history state
-    -- detect infinite loops
-    notInfititeLoop = flip notElem hist
+    notInfiniteLoop = flip notElem hist
     cur = head hist
-    inst = prog !!? cur
+    inst = program !!? cur
 
 num :: String -> Int
 num ('+' : n) = read n
 num ('-' : n) = negate (read n)
 num _ = 0
 
-part1 :: [String] -> String
-part1 input = "Part 1: " ++ show (acc (evalState (program input) emptyMem))
+part1 :: Program -> String
+part1 program = "Part 1: " ++ show (acc (evalState (runProgram program) emptyMem))
 
-part2 :: [String] -> String
-part2 input = "Part 2: " ++ maybe "no result found" show (evalProgramVariants input)
+part2 :: Program -> String
+part2 program = "Part 2: " ++ maybe "no result found" show (evalProgramVariants program)
 
-evalProgramVariants :: [String] -> Maybe Int
-evalProgramVariants input = acc <$> msum (evalProgram' <$> corruptionRepairs [] input)
+evalProgramVariants :: Program -> Maybe Int
+evalProgramVariants program = acc <$> msum (evalProgram' <$> corruptionRepairs [] program)
   where
-    evalProgram' p = guarded excited (evalState (program p) emptyMem)
+    evalProgram' program = guarded exited (evalState (runProgram program) emptyMem)
 
-corruptionRepairs :: [String] -> [String] -> [[String]]
+corruptionRepairs :: Program -> Program -> [Program]
 corruptionRepairs _ [] = []
-corruptionRepairs past insts = maybe nextCombinations (: nextCombinations) newCombination
+corruptionRepairs past insts = maybe nextPrograms (: nextPrograms) repairedProgram
   where
     inst = head insts
     next = if length insts > 1 then tail insts else []
-    newCombination = (\i -> past ++ [i] ++ next) <$> replaceInst inst
-    nextCombinations = corruptionRepairs (past ++ [inst]) next
+    repairedProgram = (\i -> past ++ [i] ++ next) <$> replaceInst inst
+    nextPrograms = corruptionRepairs (past ++ [inst]) next
 
-replaceInst :: [Char] -> Maybe [Char]
+replaceInst :: String -> Maybe String
 replaceInst inst
   | "nop" `isPrefixOf` inst = Just $ replace "nop" "jmp" inst
   | "jmp" `isPrefixOf` inst = Just $ replace "jmp" "nop" inst
