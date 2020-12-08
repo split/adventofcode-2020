@@ -1,6 +1,7 @@
 import Control.Monad
 import Control.Monad.State
 import Data.String.Utils (replace)
+import Relude (guarded)
 import Relude.List (isPrefixOf, (!!?))
 
 data Mem = Mem
@@ -12,9 +13,6 @@ data Mem = Mem
 
 emptyMem :: Mem
 emptyMem = Mem {history = [0], acc = 0, excited = False}
-
-programExcited :: Mem -> Maybe Mem
-programExcited program = if excited program then Just program else Nothing
 
 program :: [String] -> State Mem Mem
 program prog = do
@@ -56,7 +54,7 @@ part2 input = "Part 2: " ++ maybe "no result found" show (evalProgramVariants in
 evalProgramVariants :: [String] -> Maybe Int
 evalProgramVariants input = acc <$> msum (evalProgram' <$> corruptionRepairs [] input)
   where
-    evalProgram' p = programExcited (evalState (program p) emptyMem)
+    evalProgram' p = guarded excited (evalState (program p) emptyMem)
 
 corruptionRepairs :: [String] -> [String] -> [[String]]
 corruptionRepairs _ [] = []
