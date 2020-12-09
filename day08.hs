@@ -21,6 +21,9 @@ emptyMem = Mem {history = [0], acc = 0, exited = False, backups = []}
 backup :: Mem -> Mem
 backup state = state {backups = state : backups state}
 
+move :: Mem -> Int -> Mem
+move state target = state {history = target : history state}
+
 runProgram :: Program -> State Mem Mem
 runProgram program = do
   state <- get
@@ -34,14 +37,13 @@ runProgram program = do
 
 evalNextInst :: Program -> Mem -> Maybe Mem
 evalNextInst program state = case inst of
-  Just ('n' : 'o' : 'p' : ' ' : _) -> Just (backup state {history = (cur + 1) : hist})
-  Just ('a' : 'c' : 'c' : ' ' : v) -> Just state {history = (cur + 1) : hist, acc = acc state + num v}
-  Just ('j' : 'm' : 'p' : ' ' : v) -> (\target -> backup state {history = target : hist}) <$> guarded notInfiniteLoop (cur + num v)
+  Just ('n' : 'o' : 'p' : ' ' : _) -> Just (backup $ move state (cur + 1))
+  Just ('a' : 'c' : 'c' : ' ' : v) -> Just (move state {acc = acc state + num v} (cur + 1))
+  Just ('j' : 'm' : 'p' : ' ' : v) -> backup . move state <$> guarded notInfiniteLoop (cur + num v)
   Nothing -> if length program == cur then Just state {exited = True} else Nothing
   where
-    hist = history state
-    notInfiniteLoop = flip notElem hist
-    cur = head hist
+    notInfiniteLoop = flip notElem (history state)
+    cur = head $ history state
     inst = program !!? cur
 
 num :: String -> Int
