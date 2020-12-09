@@ -56,9 +56,9 @@ part2 :: Program -> String
 part2 program = "Part 2: " ++ maybe "no result found" show (evalWithBackupPatching program)
 
 evalWithBackupPatching :: Program -> Maybe Int
-evalWithBackupPatching program = acc <$> msum (restoreBackup <$> backups originalMemory)
+evalWithBackupPatching program = acc <$> msum (restoreBackup <$> backups originalState)
   where
-    originalMemory = evalState (runProgram program) emptyMem
+    originalState = evalState (runProgram program) emptyMem
     restoreBackup state = guarded exited (evalState (runProgram (patchProgram state)) state)
     patchProgram state = program & element (head $ history state) %~ replaceInst
 
