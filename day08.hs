@@ -1,3 +1,4 @@
+import Control.Lens
 import Control.Monad
 import Control.Monad.State
 import Data.String.Utils (replace)
@@ -8,13 +9,17 @@ type Program = [String]
 
 data Mem = Mem
   { history :: [Int],
+    backups :: [Mem],
     acc :: Int,
     exited :: Bool
   }
   deriving (Show)
 
 emptyMem :: Mem
-emptyMem = Mem {history = [0], acc = 0, exited = False}
+emptyMem = Mem {history = [0], acc = 0, exited = False, backups = []}
+
+backup :: Mem -> Mem
+backup state = state {backups = state : backups state}
 
 runProgram :: Program -> State Mem Mem
 runProgram program = do
@@ -29,9 +34,9 @@ runProgram program = do
 
 evalNextInst :: Program -> Mem -> Maybe Mem
 evalNextInst program state = case inst of
-  Just ('n' : 'o' : 'p' : ' ' : _) -> Just state {history = (cur + 1) : hist}
+  Just ('n' : 'o' : 'p' : ' ' : _) -> Just (backup state {history = (cur + 1) : hist})
   Just ('a' : 'c' : 'c' : ' ' : v) -> Just state {history = (cur + 1) : hist, acc = acc state + num v}
-  Just ('j' : 'm' : 'p' : ' ' : v) -> (\target -> state {history = target : hist}) <$> guarded notInfiniteLoop (cur + num v)
+  Just ('j' : 'm' : 'p' : ' ' : v) -> (\target -> backup state {history = target : hist}) <$> guarded notInfiniteLoop (cur + num v)
   Nothing -> if length program == cur then Just state {exited = True} else Nothing
   where
     hist = history state
@@ -48,27 +53,23 @@ part1 :: Program -> String
 part1 program = "Part 1: " ++ show (acc (evalState (runProgram program) emptyMem))
 
 part2 :: Program -> String
-part2 program = "Part 2: " ++ maybe "no result found" show (evalProgramVariants program)
+part2 program = "Part 2: " ++ maybe "no result found" show (evalWithBackupPatching program)
 
-evalProgramVariants :: Program -> Maybe Int
-evalProgramVariants program = acc <$> msum (evalProgram' <$> corruptionRepairs [] program)
+evalWithBackupPatching :: Program -> Maybe Int
+evalWithBackupPatching program = acc <$> msum (restoreBackup <$> backups originalMemory)
   where
-    evalProgram' program = guarded exited (evalState (runProgram program) emptyMem)
+    originalMemory = evalState (runProgram program) emptyMem
+    restoreBackup state = guarded exited (evalState (runProgram (patchProgram state)) state)
+    patchProgram state =
+      let cur = head $ history state
+          newInst = replaceInst (program !! cur)
+       in program & element cur .~ newInst
 
-corruptionRepairs :: Program -> Program -> [Program]
-corruptionRepairs _ [] = []
-corruptionRepairs past insts = maybe nextPrograms (: nextPrograms) repairedProgram
-  where
-    inst = head insts
-    next = if length insts > 1 then tail insts else []
-    repairedProgram = (\i -> past ++ [i] ++ next) <$> replaceInst inst
-    nextPrograms = corruptionRepairs (past ++ [inst]) next
-
-replaceInst :: String -> Maybe String
+replaceInst :: String -> String
 replaceInst inst
-  | "nop" `isPrefixOf` inst = Just $ replace "nop" "jmp" inst
-  | "jmp" `isPrefixOf` inst = Just $ replace "jmp" "nop" inst
-  | otherwise = Nothing
+  | "nop" `isPrefixOf` inst = replace "nop" "jmp" inst
+  | "jmp" `isPrefixOf` inst = replace "jmp" "nop" inst
+  | otherwise = inst
 
 main :: IO ()
 main = interact (unlines . sequence [part1, part2] . lines)
