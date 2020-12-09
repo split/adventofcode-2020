@@ -60,10 +60,7 @@ evalWithBackupPatching program = acc <$> msum (restoreBackup <$> backups origina
   where
     originalMemory = evalState (runProgram program) emptyMem
     restoreBackup state = guarded exited (evalState (runProgram (patchProgram state)) state)
-    patchProgram state =
-      let cur = head $ history state
-          newInst = replaceInst (program !! cur)
-       in program & element cur .~ newInst
+    patchProgram state = program & element (head $ history state) %~ replaceInst
 
 replaceInst :: String -> String
 replaceInst inst
