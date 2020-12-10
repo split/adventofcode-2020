@@ -1,10 +1,10 @@
 import Data.List
 
 part1 :: [Int] -> String
-part1 adapters = "Part 1: " ++ show (productDiffs diffs)
+part1 adapters = "Part 1: " ++ show (count 1 * count 3)
   where
-    productDiffs = product . map length . group . filter (/= 2)
-    diffs = sort (zipWith (-) (drop 1 adapters) adapters)
+    count n = length $ filter (== n) diffs
+    diffs = zipWith (-) (drop 1 adapters) adapters
 
 countArranges :: [Int] -> [Int]
 countArranges [] = []
