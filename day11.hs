@@ -1,5 +1,3 @@
-{-# LANGUAGE FlexibleContexts #-}
-
 import Control.Monad
 import Data.Maybe (isJust, mapMaybe)
 
@@ -32,9 +30,9 @@ createRule limit adj seat
   | otherwise = seat
 
 gameOfPlane :: ([Coordinated Char] -> Coordinated Char -> Coordinated Char) -> [Coordinated Char] -> Int
-gameOfPlane rule plane = last $ zipWith const occupied (False : takeWhile (/= True) repeating)
+gameOfPlane rule plane = occupied !! length notRepeating
   where
-    repeating = zipWith (==) occupied (drop 1 occupied)
+    notRepeating = takeWhile (/= True) $ zipWith (==) occupied (drop 1 occupied)
     occupied = countOccupied <$> iterate (\p -> map (rule p) p) plane
     countOccupied = length . filter ((== '#') . snd)
 
