@@ -15,7 +15,7 @@ sumCoord :: Coord -> Coord -> Coord
 sumCoord (x1, y1) (x2, y2) = (x1 + x2, y1 + y2)
 
 coordinated :: [String] -> Plane
-coordinated lines = Map.fromList [((x, y), c) | (y, ys) <- zip [0 ..] lines, (x, c) <- zip [0 ..] ys]
+coordinated rows = Map.fromList [((x, y), c) | (y, ys) <- zip [0 ..] rows, (x, c) <- zip [0 ..] ys]
 
 adjacent :: Plane -> Coord -> String
 adjacent plane seat = mapMaybe ((`Map.lookup` plane) . sumCoord seat) dirs
@@ -26,11 +26,11 @@ seeable plane seat = mapMaybe see dirs
     see = msum . filter (/= Just '.') . takeWhile isJust . map (`Map.lookup` plane) . pointsInDir
     pointsInDir dir = iterate (sumCoord dir) (sumCoord dir seat)
 
-createRule :: Int -> String -> Char -> Char
-createRule limit adj seat
-  | seat == 'L' && '#' `notElem` adj = '#'
-  | seat == '#' && length (filter (== '#') adj) >= limit = 'L'
-  | otherwise = seat
+seatStateRule :: Int -> String -> Char -> Char
+seatStateRule limit cared state
+  | state == 'L' && '#' `notElem` cared = '#'
+  | state == '#' && length (filter (== '#') cared) >= limit = 'L'
+  | otherwise = state
 
 gameOfPlane :: (Plane -> Coord -> Char -> Char) -> Plane -> Int
 gameOfPlane rule plane = occupied !! length notRepeating
@@ -42,12 +42,12 @@ gameOfPlane rule plane = occupied !! length notRepeating
 part1 :: Plane -> String
 part1 = (++) "Part 1: " . show . gameOfPlane rule
   where
-    rule plane p s = createRule 4 (adjacent plane p) s
+    rule plane seat state = seatStateRule 4 (adjacent plane seat) state
 
 part2 :: Plane -> String
 part2 = (++) "Part 2: " . show . gameOfPlane rule
   where
-    rule plane p s = createRule 5 (seeable plane p) s
+    rule plane seat state = seatStateRule 5 (seeable plane seat) state
 
 main :: IO ()
 main = interact (unlines . sequence [part1, part2] . coordinated . lines)
