@@ -23,7 +23,7 @@ adjacent plane seat = mapMaybe ((`Map.lookup` plane) . sumCoord seat) dirs
 seeable :: Plane -> Coord -> String
 seeable plane seat = mapMaybe see dirs
   where
-    see dir = msum $ filter (/= Just '.') $ takeWhile isJust $ map (`Map.lookup` plane) (pointsInDir dir)
+    see = msum . filter (/= Just '.') . takeWhile isJust . map (`Map.lookup` plane) . pointsInDir
     pointsInDir dir = iterate (sumCoord dir) (sumCoord dir seat)
 
 createRule :: Int -> String -> Char -> Char
