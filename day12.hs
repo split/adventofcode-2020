@@ -1,5 +1,3 @@
-import Debug.Trace
-
 data Command = MoveNS Int | MoveEW Int | Steer Int | Forward Int
   deriving (Show)
 
@@ -76,4 +74,4 @@ part2 = (++) "Part 2: " . show . manhattanDist . ship <$> foldl runWaypoint init
     initialState = Waypoint {wpNS = 1, wpEW = 10, ship = initialShip}
 
 main :: IO ()
-main = interact (unlines . sequence [part1, part2] . (\c -> trace (show c) c) . map command . lines)
+main = interact (unlines . sequence [part1, part2] . map command . lines)
