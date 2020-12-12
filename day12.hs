@@ -55,9 +55,9 @@ runWaypoint state (Forward n) =
 
 rotate :: Int -> Waypoint -> Waypoint
 rotate deg state = case deg of
-  90 -> state {wpNS = negate (wpEW state), wpEW = wpNS state}
-  180 -> state {wpEW = negate (wpEW state), wpNS = negate (wpNS state)}
-  270 -> state {wpNS = wpEW state, wpEW = negate (wpNS state)}
+  90 -> state {wpNS = - wpEW state, wpEW = wpNS state}
+  180 -> state {wpEW = - wpEW state, wpNS = - wpNS state}
+  270 -> state {wpNS = wpEW state, wpEW = - wpNS state}
   _ -> state
 
 manhattanDist :: Ship -> Int
