@@ -1,3 +1,5 @@
+{-# LANGUAGE RecordWildCards #-}
+
 data Command = MoveNS Int | MoveEW Int | Steer Int | Forward Int
   deriving (Show)
 
@@ -44,20 +46,14 @@ runWaypoint :: Waypoint -> Command -> Waypoint
 runWaypoint state (MoveNS n) = state {wpNS = wpNS state + n}
 runWaypoint state (MoveEW n) = state {wpEW = wpEW state + n}
 runWaypoint state (Steer n) = rotate (posDeg n) state
-runWaypoint state (Forward n) =
-  state
-    { ship =
-        (ship state)
-          { ns = ns (ship state) + wpNS state * n,
-            ew = ew (ship state) + wpEW state * n
-          }
-    }
+runWaypoint state@Waypoint {..} (Forward n) =
+  state {ship = ship {ns = ns ship + wpNS * n, ew = ew ship + wpEW * n}}
 
 rotate :: Int -> Waypoint -> Waypoint
-rotate deg state = case deg of
-  90 -> state {wpNS = - wpEW state, wpEW = wpNS state}
-  180 -> state {wpEW = - wpEW state, wpNS = - wpNS state}
-  270 -> state {wpNS = wpEW state, wpEW = - wpNS state}
+rotate deg state@Waypoint {..} = case deg of
+  90 -> state {wpNS = - wpEW, wpEW = wpNS}
+  180 -> state {wpEW = - wpEW, wpNS = - wpNS}
+  270 -> state {wpNS = wpEW, wpEW = - wpNS}
   _ -> state
 
 manhattanDist :: Ship -> Int
