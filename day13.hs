@@ -12,7 +12,7 @@ progress :: Int -> Int -> Double
 progress ts bus = fromIntegral ts / fromIntegral bus - fromIntegral (ts `div` bus)
 
 timeToNext :: Int -> [Int] -> Int
-timeToNext ts routes = ceiling (fromIntegral ts / fromIntegral nextLine) * nextLine - ts
+timeToNext ts routes = (ts `div` nextLine + 1) * nextLine - ts
   where
     nextLine = maximumBy (comparing (progress ts)) routes
 
