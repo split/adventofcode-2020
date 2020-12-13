@@ -24,9 +24,9 @@ findFreq = fst . foldl syncFreq (0, 1)
 main :: IO ()
 main = do
   ts <- read <$> getLine
-  routes <- readRoutes . splitOn "," <$> getLine
+  routes <- readRoutes <$> getLine
   putStrLn $ "Part 1: " ++ show (timeToNext ts (map snd routes))
   putStrLn $ "Part 2: " ++ show (findFreq routes)
 
-readRoutes :: [String] -> [(Int, Int)]
-readRoutes = map (second read) . filter (all isDigit . snd) . zip [0 ..]
+readRoutes :: String -> [(Int, Int)]
+readRoutes = map (second read) . filter (all isDigit . snd) . zip [0 ..] . splitOn ","
