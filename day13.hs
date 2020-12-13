@@ -9,7 +9,7 @@ import Data.Maybe (fromJust)
 import Data.Ord (comparing)
 
 timeToNext :: Int -> [Int] -> Int
-timeToNext ts = uncurry (*) <$> minimumBy (comparing snd) . map next
+timeToNext ts = uncurry (*) . minimumBy (comparing snd) . map next
   where
     next bus = (bus, (ts `div` bus + 1) * bus - ts)
 
