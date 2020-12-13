@@ -16,16 +16,18 @@ timeToNext ts routes = (ts `div` nextLine + 1) * nextLine - ts
   where
     nextLine = maximumBy (comparing (progress ts)) routes
 
-findFreq :: (Int, Int) -> (Int, Int) -> (Int, Int)
-findFreq (ts, iter) (delta, bus) =
-  (,iter * bus) $ fromJust $ find (\n -> (n + delta) `rem` bus == 0) (iterate (+ iter) ts)
+findFreq :: [(Int, Int)] -> Int
+findFreq = fst . foldl syncFreq (0, 1)
+  where
+    syncFreq (ts, iter) (delta, bus) =
+      (,iter * bus) $ fromJust $ find (\n -> (n + delta) `rem` bus == 0) (iterate (+ iter) ts)
 
 main :: IO ()
 main = do
   ts <- read <$> getLine
   routes <- readRoutes . splitOn "," <$> getLine
   putStrLn $ "Part 1: " ++ show (timeToNext ts (map snd routes))
-  putStrLn $ "Part 2: " ++ show (fst $ foldl findFreq (0, 1) routes)
+  putStrLn $ "Part 2: " ++ show (findFreq routes)
 
 readRoutes :: [String] -> [(Int, Int)]
 readRoutes = map (second read) . filter (all isDigit . snd) . zip [0 ..]
