@@ -2,18 +2,16 @@
 
 import Data.Bifunctor (Bifunctor (second))
 import Data.Char (isDigit)
-import Data.Foldable (maximumBy)
+import Data.Foldable (minimumBy)
 import Data.List (find)
 import Data.List.Split (splitOn)
 import Data.Maybe (fromJust)
 import Data.Ord (comparing)
 
 timeToNext :: Int -> [Int] -> Int
-timeToNext ts routes = (ts `div` nextLine + 1) * nextLine - ts
+timeToNext ts = uncurry (*) <$> minimumBy (comparing snd) . map next
   where
-    nextLine = maximumBy (comparing progress) routes
-    progress :: Int -> Double
-    progress bus = fromIntegral ts / fromIntegral bus - fromIntegral (ts `div` bus)
+    next bus = (bus, ((ts `div` bus + 1) * bus) - ts)
 
 findFreq :: [(Int, Int)] -> Int
 findFreq = fst . foldl syncFreq (0, 1)
