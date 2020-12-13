@@ -8,13 +8,12 @@ import Data.List.Split (splitOn)
 import Data.Maybe (fromJust)
 import Data.Ord (comparing)
 
-progress :: Int -> Int -> Double
-progress ts bus = fromIntegral ts / fromIntegral bus - fromIntegral (ts `div` bus)
-
 timeToNext :: Int -> [Int] -> Int
 timeToNext ts routes = (ts `div` nextLine + 1) * nextLine - ts
   where
-    nextLine = maximumBy (comparing (progress ts)) routes
+    nextLine = maximumBy (comparing progress) routes
+    progress :: Int -> Double
+    progress bus = fromIntegral ts / fromIntegral bus - fromIntegral (ts `div` bus)
 
 findFreq :: [(Int, Int)] -> Int
 findFreq = fst . foldl syncFreq (0, 1)
