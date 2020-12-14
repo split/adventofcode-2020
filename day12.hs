@@ -21,6 +21,15 @@ command input = case input of
   -- is currently facing.
   'F' : n -> Forward (read n)
 
+data Runner a = Runner { 
+  targetNs :: a -> Int,
+  targetEw :: a -> Int,
+  velocity :: (Int, Int)
+  }
+
+run :: Runner a -> Command -> Runner a
+run = 
+
 data Ship = Ship {ns :: Int, ew :: Int, dir :: Int}
   deriving (Show)
 
