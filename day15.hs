@@ -1,6 +1,6 @@
 {-# LANGUAGE LambdaCase #-}
 
-import Control.Monad.Reader
+import Control.Monad (forM_)
 import Control.Monad.ST (ST, runST)
 import Data.List.Split (splitOn)
 import qualified Data.Vector.Unboxed.Mutable as VecM
