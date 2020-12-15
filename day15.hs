@@ -1,21 +1,29 @@
-import Data.List.Split (splitOn)
-import qualified Data.Map as Map
+{-# LANGUAGE LambdaCase #-}
 
-type GameHistory = Map.Map Int Int
+import Control.Monad.Reader
+import Control.Monad.ST (ST, runST)
+import Data.List.Split (splitOn)
+import qualified Data.Vector.Unboxed.Mutable as VecM
+
+type GameHistory s = VecM.STVector s Int
 
 getTurn :: Int -> [(Int, Int)] -> Int
-getTurn targetTurn initial = runGame targetTurn (Map.fromList $ init initial) (last initial)
+getTurn targetTurn initial = runST $ do
+  hist <- VecM.replicate targetTurn (-1)
+  forM_ (init initial) (uncurry $ VecM.write hist)
+  runGame hist targetTurn (last initial)
 
-runGame :: Int -> GameHistory -> (Int, Int) -> Int
-runGame targetTurn hist lastNum@(lastValue, lastTurn) =
-  if turn == targetTurn then answer else runGame targetTurn nextHist (answer, turn)
-  where
-    answer = getAnswer lastNum hist
-    nextHist = Map.insert lastValue lastTurn hist
-    turn = lastTurn + 1
+runGame :: GameHistory s -> Int -> (Int, Int) -> ST s Int
+runGame hist targetTurn (lastValue, lastTurn) = do
+  answer <-
+    VecM.read hist lastValue >>= \case
+      (-1) -> return 0
+      a -> return (lastTurn - a)
 
-getAnswer :: (Int, Int) -> GameHistory -> Int
-getAnswer (lastNum, lastTurn) hist = maybe 0 (lastTurn -) (lastNum `Map.lookup` hist)
+  VecM.write hist lastValue lastTurn
+  if lastTurn + 1 == targetTurn
+    then return answer
+    else runGame hist targetTurn (answer, lastTurn + 1)
 
 main :: IO ()
 main = interact (unlines . solve . flip zip [1 ..] . map read . splitOn ",")
