@@ -1,7 +1,4 @@
-import Data.List (delete, find, intersect, isPrefixOf, transpose, union, (\\))
-import Data.List.Utils (uniq)
-import Data.Maybe (mapMaybe)
-import Debug.Trace
+import Data.List (intersect, isPrefixOf, transpose, (\\))
 import Text.ParserCombinators.Parsec
 
 type Range = (Int, Int)
