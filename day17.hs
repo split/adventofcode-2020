@@ -42,6 +42,7 @@ main = interact (unlines . sequence simulations . lines)
 readCoords :: (Int -> Int -> Coord) -> [String] -> Space
 readCoords f input = Set.fromList [f x y | (y, ys) <- zip [0 ..] input, (x, state) <- zip [0 ..] ys, state == '#']
 
+{-# INLINE neighborCoords #-}
 neighborCoords :: Coord -> [Coord]
 neighborCoords (SpaceCoord dx dy dz) = [SpaceCoord (dx + x) (dy + y) (dz + z) | x <- [(-1) .. 1], y <- [(-1) .. 1], z <- [(-1) .. 1], (x, y, z) /= (0, 0, 0)]
 neighborCoords (HyperCoord dx dy dz dw) = [HyperCoord (dx + x) (dy + y) (dz + z) (dw + w) | x <- [(-1) .. 1], y <- [(-1) .. 1], z <- [(-1) .. 1], w <- [(-1) .. 1], (x, y, z, w) /= (0, 0, 0, 0)]
