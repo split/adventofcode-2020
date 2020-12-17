@@ -19,7 +19,7 @@ getNewNeighbors inactive space = Set.fromAscList $ filter rule inactive
 
 processCube :: Coord -> Space -> Space
 processCube coord space
-  | length active == 2 || length active == 3 = coord `Set.insert` newNeighbors
+  | length active `elem` [2, 3] = coord `Set.insert` newNeighbors
   | otherwise = newNeighbors
   where
     (active, inactive) = partition (`isActive` space) (neighborCoords coord)
