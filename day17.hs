@@ -35,15 +35,12 @@ main = interact (unlines . sequence simulations . lines)
   where
     runSimulation = show . length . last . take 7 . iterate simulate
     simulations =
-      [ ("Part 1: " ++) . runSimulation . readSpace,
-        ("Part 2: " ++) . runSimulation . readHyper
+      [ ("Part 1: " ++) . runSimulation . readCoords (\x y -> SpaceCoord x y 0),
+        ("Part 2: " ++) . runSimulation . readCoords (\x y -> HyperCoord x y 0 0)
       ]
 
-readSpace :: [String] -> Space
-readSpace input = Set.fromList [SpaceCoord x y 0 | (y, ys) <- zip [0 ..] input, (x, state) <- zip [0 ..] ys, state == '#']
-
-readHyper :: [String] -> Space
-readHyper input = Set.fromList [HyperCoord x y 0 0 | (y, ys) <- zip [0 ..] input, (x, state) <- zip [0 ..] ys, state == '#']
+readCoords :: (Int -> Int -> Coord) -> [String] -> Space
+readCoords f input = Set.fromList [f x y | (y, ys) <- zip [0 ..] input, (x, state) <- zip [0 ..] ys, state == '#']
 
 neighborCoords :: Coord -> [Coord]
 neighborCoords (SpaceCoord dx dy dz) = [SpaceCoord (dx + x) (dy + y) (dz + z) | x <- [(-1) .. 1], y <- [(-1) .. 1], z <- [(-1) .. 1], (x, y, z) /= (0, 0, 0)]
