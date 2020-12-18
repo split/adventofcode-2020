@@ -11,19 +11,20 @@ parseExpr equal = makeExprParser (value <|> parens (parseExpr equal)) opTable
   where
     opTable = if equal then [[plus, mult]] else [[plus], [mult]]
     parens = between (char '(') (char ')')
+    value = Val . read <$> many1 digit
     plus = InfixL $ Plus <$ char '+'
     mult = InfixL $ Mult <$ char '*'
 
-value = do
-  n <- many1 digit
-  return (Val (read n))
+-- value = do
+--   n <- many1 digit
+--   return (Val (read n))
 
 calc :: Expr -> Int
 calc (Mult a b) = calc a * calc b
 calc (Plus a b) = calc a + calc b
 calc (Val a) = a
 
--- Solve expr
+-- | Solve expr |
 --
 -- Examples:
 --
@@ -34,7 +35,7 @@ calc (Val a) = a
 -- >>> solveExpr False "2 * 3 + (4 * 5)"
 -- 46
 -- >>> solveExpr False "5 + (8 * 3 + 9 + 3 * 4 * 3)"
--- Couldn't match expected type ‘Bool’ with actual type ‘[Char]’
+-- 1445
 -- >>> solveExpr False "5 * 9 * (7 * 3 * 3 + 9 * 3 + (8 + 6 * 4))"
 -- 669060
 
