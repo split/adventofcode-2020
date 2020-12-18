@@ -34,7 +34,6 @@ calc (Val a) = a
 -- 1445
 -- >>> solveExpr False "5 * 9 * (7 * 3 * 3 + 9 * 3 + (8 + 6 * 4))"
 -- 669060
-
 -- >>> solveExpr False "((2 + 4 * 9) * (6 + 9 * 8 + 6) + 6) + 2 + 4 * 2"
 -- 23340
 solveExpr equal = either (const 0) calc . parse (parseExpr equal) "" . filter (/= ' ')
