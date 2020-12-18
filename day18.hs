@@ -15,10 +15,6 @@ parseExpr equal = makeExprParser (value <|> parens (parseExpr equal)) opTable
     plus = InfixL $ Plus <$ char '+'
     mult = InfixL $ Mult <$ char '*'
 
--- value = do
---   n <- many1 digit
---   return (Val (read n))
-
 calc :: Expr -> Int
 calc (Mult a b) = calc a * calc b
 calc (Plus a b) = calc a + calc b
