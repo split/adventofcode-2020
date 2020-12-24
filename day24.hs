@@ -9,22 +9,20 @@ type FlipMap = S.Set Hex
 directions :: [(String, Hex)]
 directions = [("e", (1, 0)), ("ne", (1, -1)), ("nw", (0, -1)), ("w", (-1, 0)), ("sw", (-1, 1)), ("se", (0, 1))]
 
-dirSet = S.fromList (map snd directions)
-
 flipTile :: FlipMap -> Hex -> FlipMap
 flipTile tiles tile = if tile `notElem` tiles then S.insert tile tiles else S.delete tile tiles
 
 gameOfTiles :: FlipMap -> FlipMap
 gameOfTiles tiles = S.unions $ S.map processTile tiles
   where
-    countBlack = length . S.filter (`elem` tiles)
-    adjacent t = S.map (+ t) dirSet
+    countBlack = length . filter (`elem` tiles)
+    adjacent t = map ((+ t) . snd) directions
     processTile :: Hex -> S.Set Hex
     processTile t
       | black == 0 || black > 2 = newTiles
       | otherwise = S.insert t newTiles
       where
-        newTiles = S.filter ((== 2) . countBlack . adjacent) adj
+        newTiles = S.fromList $ filter ((== 2) . countBlack . adjacent) adj
         black = countBlack adj
         adj = adjacent t
 
