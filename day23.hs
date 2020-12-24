@@ -1,37 +1,63 @@
-import Data.Char (digitToInt)
-import Data.List
-import Data.List.Split (splitOn)
-import Data.Maybe (fromMaybe)
-import Debug.Trace (trace)
+{-# LANGUAGE FlexibleContexts #-}
 
-data Move = Move
-  { cups :: [Int],
-    pickedUp :: [Int],
-    current :: Int,
-    destination :: Int
-  }
-  deriving (Show)
+module Main where
 
-pickDestination :: Int -> [Int] -> Int
-pickDestination current = (!! 1) . dropWhile (/= current) . cycle . reverse . sort . (current :)
+import Control.Monad.ST
+import Data.Array.Base (thawSTUArray)
+import Data.Array.ST
+import Data.Array.Unboxed
+import Data.Char (intToDigit, digitToInt)
 
-move :: [Int] -> [Int]
-move cups =
-  trace
-    ("cups: (" ++ show current ++ ") " ++ show [pickedUp, cupsLeft] ++ "\npick up: " ++ show pickedUp ++ "\ndestination: " ++ show destination)
-    (insertAfter destination pickedUp cupsLeft ++ [current])
+
+type Cup = Int
+type CupCircle = UArray Cup Cup
+type STCupCircle s = STUArray s Cup Cup
+
+buildCupCircle :: [Cup] -> CupCircle
+buildCupCircle cups = array (minimum cups, maximum cups) $ zip cups (tail $ cycle cups)
+
+playCups :: Int -> [Cup] -> CupCircle
+playCups rounds initialCups = runSTUArray $ do
+  cups <- thawSTUArray (buildCupCircle initialCups)
+  cups <$ (iterate (>>= playRound cups) (pure (head initialCups)) !! rounds)
   where
-    current = head cups
-    destination = pickDestination current cupsLeft
-    pickedUp = take 3 $ drop 1 cups
-    cupsLeft = filter (\c -> c /= current && c `notElem` pickedUp) cups
+    playRound :: STCupCircle s -> Int -> ST s Int
+    playRound cups' current = do
+      bounds <- getBounds cups'
+      pickedUp <- readPickedUps
+      next <- readArray cups' (last pickedUp)
+      writeArray cups' current next
 
-insertAfter :: Eq a => a -> [a] -> [a] -> [a]
-insertAfter item items target = fromMaybe target replaced
+      let destination = pickDestination pickedUp bounds (current - 1)
+      readArray cups' destination >>= writeArray cups' (last pickedUp)
+      writeArray cups' destination (head pickedUp)
+
+      return next
+        where 
+          readPickedUps = do
+            pickUp1 <- readArray cups' current
+            pickUp2 <- readArray cups' pickUp1
+            pickUp3 <- readArray cups' pickUp2
+            pure [pickUp1, pickUp2, pickUp3]
+
+pickDestination :: [Cup] -> (Cup, Cup) -> Cup -> Cup
+pickDestination pickedUp (minCup, maxCup) = go
   where
-    replaced = (\(a, b) -> a ++ (item : items) ++ b) . flip splitAt target <$> elemIndex item target
+    go cup
+      | cup < minCup = go maxCup
+      | cup `notElem` pickedUp = cup
+      | otherwise = go (cup - 1)
 
-solve :: [Int] -> String
+oneMillionCups cups = cups ++ [maximum cups + 1 .. 1000000]
+
+part1 = ("Part 1: " ++) . pickCups . playCups 100
+  where
+    pickCups cups = map intToDigit . takeWhile (/= 1) $ iterate (cups !) (cups ! 1)  
+
+part2 = ("Part 2: " ++) . show . pickStars . playCups 10000000 . oneMillionCups
+  where
+    pickStars cups = (cups ! 1) * (cups ! (cups ! 1))
+
 solve = show
 
 main :: IO ()
