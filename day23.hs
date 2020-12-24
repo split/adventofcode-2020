@@ -58,10 +58,8 @@ part2 = ("Part 2: " ++) . show . pickStars . playCups 10000000 . oneMillionCups
   where
     pickStars cups = (cups ! 1) * (cups ! (cups ! 1))
 
-solve = show
-
 main :: IO ()
-main = interact (solve . map digitToInt)
+main = interact (unlines . sequence [part1, part2] . map digitToInt)
 
 example :: [Int]
 example = [3, 8, 9, 1, 2, 5, 4, 6, 7]
