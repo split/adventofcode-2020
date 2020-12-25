@@ -1,4 +1,5 @@
-import Data.NumInstances.Tuple
+import qualified Data.Map as M
+import Data.NumInstances.Tuple ()
 import qualified Data.Set as S
 import Text.ParserCombinators.Parsec
 
@@ -6,25 +7,21 @@ type Hex = (Int, Int)
 
 type FlipMap = S.Set Hex
 
+{-# INLINE directions #-}
 directions :: [(String, Hex)]
 directions = [("e", (1, 0)), ("ne", (1, -1)), ("nw", (0, -1)), ("w", (-1, 0)), ("sw", (-1, 1)), ("se", (0, 1))]
 
 flipTile :: FlipMap -> Hex -> FlipMap
-flipTile tiles tile = if tile `notElem` tiles then S.insert tile tiles else S.delete tile tiles
+flipTile tiles tile
+  | tile `notElem` tiles = S.insert tile tiles
+  | otherwise = S.delete tile tiles
 
 gameOfTiles :: FlipMap -> FlipMap
-gameOfTiles tiles = S.unions $ S.map processTile tiles
+gameOfTiles tiles = M.keysSet $ M.union stayedBlack turnedToBlack
   where
-    countBlack = length . filter (`elem` tiles)
-    adjacent t = map ((+ t) . snd) directions
-    processTile :: Hex -> S.Set Hex
-    processTile t
-      | black == 0 || black > 2 = newTiles
-      | otherwise = S.insert t newTiles
-      where
-        newTiles = S.fromList $ filter ((== 2) . countBlack . adjacent) adj
-        black = countBlack adj
-        adj = adjacent t
+    tileM = M.unionsWith (+) [M.fromSet (const 1) (S.mapMonotonic (+ d) tiles) | d <- snd <$> directions]
+    turnedToBlack = M.filter (== 2) $ M.withoutKeys tileM tiles
+    stayedBlack = M.filter (<= 2) $ M.restrictKeys tileM tiles
 
 main :: IO ()
 main = interact (either show (unlines . sequence [part1, part2] . foldl flipTile S.empty) . parse (hexCoord `sepBy` char '\n') "")
