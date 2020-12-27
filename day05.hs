@@ -1,21 +1,19 @@
-import Data.Bifunctor
-import Data.List
+module Main where
 
-reducePartitions :: Char -> (Int, Int) -> [Char] -> Int
-reducePartitions pickUpper initialRegion partitions =
-  fst $ foldl cropRegion initialRegion partitions
-  where
-    half x = fromIntegral x / 2
-    cropRegion region partition =
-      if partition == pickUpper
-        then first (ceiling . half . (+ snd region)) region
-        else second (floor . half . (+ fst region)) region
+import Data.List (find, sort)
 
+-- >>> calcSid "BFFFBBFRRR"
+-- 567
+-- >>> calcSid "FFFBBBFRRR"
+-- 119
+-- >>> calcSid "BBFFBBFRLL"
+-- 820
 calcSid :: String -> Int
-calcSid s = row * 8 + col
+calcSid = foldl (\sid p -> sid * 2 + bit p) 0
   where
-    row = reducePartitions 'B' (0, 127) (take 7 s)
-    col = reducePartitions 'R' (0, 7) (drop 7 s)
+    bit 'B' = 1
+    bit 'R' = 1
+    bit _ = 0
 
 part1 :: [String] -> String
 part1 = (++) "Part 1: " <$> show . maximum . map calcSid
