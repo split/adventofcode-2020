@@ -42,12 +42,12 @@ gameOfPlane rule plane = occupied !! length notRepeating
 part1 :: Plane -> String
 part1 = (++) "Part 1: " . show . gameOfPlane rule
   where
-    rule plane seat state = seatStateRule 4 (adjacent plane seat) state
+    rule plane = seatStateRule 4 . adjacent plane
 
 part2 :: Plane -> String
 part2 = (++) "Part 2: " . show . gameOfPlane rule
   where
-    rule plane seat state = seatStateRule 5 (seeable plane seat) state
+    rule plane = seatStateRule 5 . seeable plane
 
 main :: IO ()
 main = interact (unlines . sequence [part1, part2] . coordinated . lines)
